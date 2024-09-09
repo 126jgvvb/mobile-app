@@ -1,0 +1,219 @@
+Future <void> _submit(date) async{
+var uri=Uri.parse('http://${serverIP}/allAgents');
+
+var resp=await http.post(uri,body:date);
+if(resp.statusCode==200){
+  setState(()async {
+      obtainedData=resp.body as List;
+  var storage=await Hive.openBox('Box1');
+      storage.addAll(resp.body as List);
+  });
+}  
+
+}
+
+
+
+
+
+Future <void> LoadsavedIP()async {
+SharedPreferences prefs=await SharedPreferences.getInstance();
+if(await prefs.getString('savedIP')!=null){
+setState(()async {
+  serverIP=await prefs.getString('savedIP') as String;
+});    }
+else{ 
+   serverIP='0.0.0.0';
+}
+}
+
+
+
+
+Future<void> checkServer() async{
+  var uri=Uri.parse('http://${serverIP}:2000/ping');
+  var resp=await http.get(uri);
+
+if(resp.statusCode==200 && resp.body=="active") setState(() {
+  serverState=true;
+}); 
+}
+
+
+
+
+
+
+class _initScanner extends State<scannerScreen> with SingleTickerProviderStateMixin{
+
+late AnimationController _animationController;
+bool _animationStopped=false;
+String scanText='Scan';
+bool scanning=false;
+
+@override
+void initState(){
+_animationController =new AnimationController(duration:Duration(seconds: 1), vsync:this);
+
+_animationController.addStatusListener((status) {
+  if(status==AnimationStatus.completed){
+    animateScanAnimation(true);
+  }
+  else if(status==AnimationStatus.dismissed){
+    animateScanAnimation(false);
+  }
+});
+_animationController.forward(from: 0.0);
+
+super.initState();
+}
+
+@override
+Widget build(BuildContext context){
+  return Material(
+      child: SafeArea(
+        child: Container(
+          height: double.infinity,
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Stack(
+                children: [
+                  Padding(
+                    padding:const EdgeInsets.all(5.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white),
+                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        child: QRScan() /*Image(
+                          width: 334,
+                          image:AssetImage('assets/pizza.jpeg')),*/
+                        ),
+                    ),
+                     ),
+                     Container(
+                      child:ImageScanner(_animationStopped,334,animation: _animationController,),
+                     )
+
+                ],
+              ) ,
+              Padding(
+                padding:const EdgeInsets.only(top: 32.0),
+                child: MaterialButton(
+                  color:Colors.green,
+                  onPressed:(){
+                    if(!scanning){
+                     // animateScanAnimation(false);
+                    setState(() {
+                      _animationStopped=true;
+                      scanning=true;
+                      scanText='Stop';
+                    });
+                    }
+                    else{
+                      setState(() {
+                        _animationStopped=true;
+                        scanning=false;
+                        scanText='Scan';
+                      });
+                    }
+                  },
+                  child: Text(scanText),
+                  ),
+                )    
+            ],
+          ),
+        )
+        ),
+
+  );
+}
+
+------------------------listPAGE--------------------
+   ListView.builder(
+          itemCount:0,
+          itemBuilder: (context,index){
+            return ListTile(
+              tileColor: Colors.blueGrey,
+              textColor: Colors.white,
+             // shape: CircleBorder(eccentricity: 0.5),
+              hoverColor:Color.fromARGB(255, 22, 140, 199) ,
+              selectedColor: Colors.green,
+              focusColor: Colors.blue,
+              title:Text(''),
+        //      subtitle: Text('${allAgents[index]["batch"]}',style: TextStyle(fontSize: 12,color: Colors.yellow),),
+             onTap: (){},
+             onLongPress: (){
+                showDialog(
+                  context: context,
+                   builder: ((context) =>
+                   AlertDialog(
+                    title: Icon(Icons.warning_amber_rounded),
+                    content: Text('Delete agent?'),
+                    actions: <Widget>[
+                      TextButton(child:Text('ok'),onPressed: (){},),
+                      TextButton(onPressed: (){}, child: Text('cancel')),
+                    ],
+                   ))
+                   );
+             },
+            );
+          },
+         ),
+            ListView.builder(
+          itemCount:defaultCnt,
+          itemBuilder: (context,index){
+            return ListTile(
+              title: Text(''),
+              subtitle: Text(''),
+             onTap: (){},
+            );
+          },
+         ),
+            ListView.builder(
+          itemCount:defaultCnt,
+          itemBuilder: (context,index){
+            return ListTile(
+              title: Text(''),
+              subtitle: Text(''),
+             onTap: (){},
+            );
+          },
+         )
+
+
+
+
+         -----------------SnackBar for the main(signup) page------------------------
+         (
+               _scaffoldKey.currentState?.showSnackBar(
+    const SnackBar(
+      duration: Duration(seconds: 3),
+      content: Text('Error,check yor credentials/whether the server is active...')),
+             ));
+
+             -----------------------------------------
+             final box=snapshot.data!;
+                var dataList=box.values.toList();
+                // ignore: avoid_print
+                print("*********:${dataList}");
+                
+                return ListView.builder(
+                  itemCount: dataList.length,
+                  itemBuilder: (BuildContext context,int index){
+                    final item=dataList[index];
+                    return ListTile(
+                            tileColor: Colors.blueGrey,
+                            textColor: Colors.white,
+                           hoverColor:const Color.fromARGB(255, 22, 140, 199) ,
+                           selectedColor: Colors.green,
+                           focusColor: Colors.blue,
+                           title: Text(item.name),
+                           subtitle: Text(item.batch),
+                    );
+                  });

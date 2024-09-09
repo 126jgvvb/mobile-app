@@ -1,0 +1,27 @@
+
+       <intent-filter android:label="@string/filter_view_http_chargedpacket">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <!--Accepts uris that begin with http://www.example.com/chargedpacket-->
+        <data android:scheme='http' android:host="www.example.com" android:pathPrefix="/chargedpacket"/>
+        </intent-fliter>
+
+        <!-- Make sure you explicitly set android:autoVerify to "true". -->
+<intent-filter android:autoVerify="true">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <!-- If a user clicks on a shared link that uses the "http" scheme-->
+    <data android:scheme="http" />
+    <!-- Include one or more domains that should be verified. -->
+    <data android:host="www.example.com/chargedpacket" />
+</intent-filter>
+
+         <intent-filter android:label="@string/filter_view_http_chargedpacket">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <!--Accepts uris that begin with www.example.com/chargedpacket-->
+        <data android:scheme='http' android:host="example" android:pathPrefix="chargedpacket"/>
+        </intent-fliter>
